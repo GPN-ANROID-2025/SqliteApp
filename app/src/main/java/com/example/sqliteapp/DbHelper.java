@@ -24,7 +24,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     MyFactory myFactory;
     public DbHelper(@Nullable Context context) {
-        super(context, DB_NAME,new MyFactory(), DB_VERSION);
+        super(context, DB_NAME,null, DB_VERSION);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         SQLiteDatabase database=getReadableDatabase();
 
-        Cursor cursor=database.rawQuery("SELECT * FROM "+TBL_STUDENT,null);
+        Cursor cursor=database.rawQuery("SELECT * FROM student",null);
 
         if(cursor.moveToFirst())
         {
@@ -81,6 +81,56 @@ public class DbHelper extends SQLiteOpenHelper {
 
 
         return studentList;
+    }
+
+    public int deleteStudent(int id)
+    {
+
+        SQLiteDatabase database=getWritableDatabase();
+
+        int count =database.delete(TBL_STUDENT,"id=?",new String[]{String.valueOf(id)});
+
+        return count;
+    }
+
+    public  int updateStudent(Student student)
+    {
+
+        SQLiteDatabase database=getWritableDatabase();
+        ContentValues values=new ContentValues();
+        values.put(KEY_NAME,student.getName());
+        values.put(KEY_CITY,student.getCity());
+        int count=database.update(TBL_STUDENT,values,"id=?",new String[]{String.valueOf(student.getId())});
+        return count;
+    }
+    public ArrayList<Student> searchStudent(String name)
+    {
+        ArrayList<Student> list=new ArrayList<>();
+
+        SQLiteDatabase database=getReadableDatabase();
+
+        Cursor cursor=database.rawQuery("SELECT * FROM student where name LIKE?",new String[]{"%"+name+"%"});
+
+        if(cursor.moveToFirst())
+        {
+            do {
+
+                Student studentObj=new Student();
+                studentObj.setId(cursor.getInt(0));
+                studentObj.setName(cursor.getString(1));
+                studentObj.setCity(cursor.getString(2));
+
+                list.add(studentObj);
+
+            }while (cursor.moveToNext());
+
+            cursor.close();
+        }else{
+
+            Log.d("mytag","No records");
+        }
+
+        return list;
     }
 
 }
